@@ -83,3 +83,39 @@ resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
+
+# 8. Die eigentliche Virtual Machine
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                = "interview-vm"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  size                = "Standard_B1s" # Günstige Größe
+  admin_username      = "adminuser"
+  network_interface_ids = [
+    azurerm_network_interface.nic.id,
+  ]
+
+  # SSH Key Authentifizierung (Sicherer als ein Passwort)
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+
+  # Das Betriebssystem (Image)
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_SSD_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+}
+
+# 9. Output (Damit man die IP am Ende sehen kann)
+output "public_ip_address" {
+  value = azurerm_public_ip.public_ip.ip_address
+}
