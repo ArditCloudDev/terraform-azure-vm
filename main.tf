@@ -13,13 +13,10 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "ardit-interview-resources"
-  location = "germanywestcentral"
+  name     = var.resource_group_name
+  location = var.location
 }
 
-# NETZWERK KONFIGURATION
-
-# 2. Virtual Network (Das private Netzwerk)
 resource "azurerm_virtual_network" "vnet" {
   name                = "interview-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -27,7 +24,6 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# 3. Subnet (Teilbereich für die VM)
 resource "azurerm_subnet" "subnet" {
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -35,7 +31,6 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# 4. Public IP (Damit die VM aus dem Internet erreichbar ist)
 resource "azurerm_public_ip" "public_ip" {
   name                = "vm-public-ip"
   location            = azurerm_resource_group.rg.location
@@ -44,7 +39,6 @@ resource "azurerm_public_ip" "public_ip" {
   sku                 = "Standard"
 }
 
-# 5. Network Interface (Die virtuelle Netzwerkkarte)
 resource "azurerm_network_interface" "nic" {
   name                = "vm-nic"
   location            = azurerm_resource_group.rg.location
@@ -58,13 +52,11 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# 6. Network Security Group (Die Firewall)
 resource "azurerm_network_security_group" "nsg" {
   name                = "vm-nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
-  # Regel: SSH erlauben
   security_rule {
     name                       = "SSH"
     priority                   = 1001
@@ -78,33 +70,29 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-# 7. Verknüpfung von NIC und NSG
 resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-# 8. Die eigentliche Virtual Machine
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "interview-vm"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  size                = "Standard_B1s" # Günstige Größe
-  admin_username      = "adminuser"
+  size                = var.vm_size
+  admin_username      = var.admin_username
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
 
-  # SSH Key Authentifizierung (Sicherer als ein Passwort)
   admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    username   = var.admin_username
+    public_key = file("C:/Users/Privardit/.ssh/id_rsa.pub")
   }
 
-  # Das Betriebssystem (Image)
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Standard_SSD_LRS"
+    storage_account_type = "StandardSSD_LRS"
   }
 
   source_image_reference {
@@ -113,9 +101,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "22_04-lts"
     version   = "latest"
   }
-}
-
-# 9. Output (Damit man die IP am Ende sehen kann)
-output "public_ip_address" {
-  value = azurerm_public_ip.public_ip.ip_address
 }
