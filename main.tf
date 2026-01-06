@@ -16,3 +16,21 @@ resource "azurerm_resource_group" "rg" {
   name     = "ardit-interview-resources"
   location = "germanywestcentral"
 }
+
+# NETZWERK KONFIGURATION
+
+# 2. Virtual Network (Das private Netzwerk)
+resource "azurerm_virtual_network" "vnet" {
+  name                = "interview-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+# 3. Subnet (Teilbereich für die VM)
+resource "azurerm_subnet" "subnet" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
