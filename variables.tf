@@ -1,3 +1,7 @@
+# Variablen für den Code
+# Änderung der Werte hier, werden dann in main genutzt
+
+
 variable "resource_group_name" {
   description = "Name der Resource Group"
   type        = string
@@ -7,17 +11,25 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure Region"
   type        = string
-  default     = "germanywestcentral"
+  default     = "germanywestcentral" # Frankfurt. Wichtig für Datenschutz und Geschwindigkeit
 }
 
 variable "vm_size" {
   description = "Größe der VM"
   type        = string
-  default     = "Standard_B1s"
+  default     = "Standard_B2ps_v2" # B1s ist kleine, kostengünstige Größe für Tests 
 }
 
 variable "admin_username" {
   description = "Admin Benutzername für die VM"
   type        = string
   default     = "adminuser"
+}
+
+# Den Computerpfad für den SSH-Key ersetzen
+variable "ssh_public_key_path" {
+  description = "Pfad zum öffentlichen SSH-Key auf dem lokalen Rechner"
+  type        = string
+  # ~ ist Zeichen für Home-Verzeichnis also C:/User...
+  default     = "~/.ssh/id_rsa.pub" 
 }
