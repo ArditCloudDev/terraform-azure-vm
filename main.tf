@@ -121,7 +121,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 # SSH-Key Authentifizierung (Sicherer als Passwort)
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file(pathexpand(var.ssh_public_key_path)) # .pub, public key. Ist das Schloss, nicht der Schlüssel
+    public_key = file(pathexpand(var.ssh_public_key_path)) 
   }
 
 # Festplatte, hier SSD
