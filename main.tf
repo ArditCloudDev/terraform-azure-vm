@@ -28,6 +28,7 @@ resource "azurerm_resource_group" "rg" {
 
 # 4. Virtual Network (VNet) aufsetzen. (Stadtgebiet)
 # Bildet das private, isolierte Netzwerk in der Cloud
+# Grundlage für alles
 resource "azurerm_virtual_network" "vnet" {
   name                = "interview-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -118,11 +119,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
   ]
 
 # SSH-Key Authentifizierung (Sicherer als Passwort)
-# Im Team ginge es nicht mit dem Pfad. Dort muss der Schlüssel als Variable übergeben werden. 
-# Key wird dann als 'Secret' hinterlegt, so werden keine Pfade im Code benötigt.
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file("C:/Users/Privardit/.ssh/id_rsa.pub") # .pub, public key. Ist das Schloss, nicht der Schlüssel
+    public_key = file(pathexpand(var.ssh_public_key_path)) # .pub, public key. Ist das Schloss, nicht der Schlüssel
   }
 
 # Festplatte, hier SSD
@@ -135,7 +134,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    # "-arm64" angehangen, damit es auf B2ps_v2 läuft
+    sku       = "22_04-lts-arm64"
     version   = "latest"
   }
 }

@@ -17,11 +17,19 @@ variable "location" {
 variable "vm_size" {
   description = "Größe der VM"
   type        = string
-  default     = "Standard_B1s" # B1s ist kleine, kostengünstige Größe für Tests 
+  default     = "Standard_B2ps_v2" # B1s ist kleine, kostengünstige Größe für Tests 
 }
 
 variable "admin_username" {
   description = "Admin Benutzername für die VM"
   type        = string
   default     = "adminuser"
+}
+
+# Den Computerpfad für den SSH-Key ersetzen
+variable "ssh_public_key_path" {
+  description = "Pfad zum öffentlichen SSH-Key auf dem lokalen Rechner"
+  type        = string
+  # ~ ist Zeichen für Home-Verzeichnis also C:/User...
+  default     = "~/.ssh/id_rsa.pub" 
 }
