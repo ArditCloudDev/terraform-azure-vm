@@ -14,12 +14,10 @@ terraform {
 # 2. Subscription_id, wer zahlt die "VM" in diesem Fall
 provider "azurerm" {
   features {}
-  subscription_id = "aaeff4b6-68b6-4218-9860-9671d25ba573"
+# nachgebessert, Subscription_id gelöscht. Terraform nutzt die aktive CLI-Session (az login).
 }
 
 # 3. Resource Group (Container)
-# Alle Ressourcen müssen in einer Gruppe liegen
-# Wenn man die Gruppe löscht, ist alles weg (hilft sauber aufzuräumen)
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
@@ -27,8 +25,6 @@ resource "azurerm_resource_group" "rg" {
 
 
 # 4. Virtual Network (VNet) aufsetzen. (Stadtgebiet)
-# Bildet das private, isolierte Netzwerk in der Cloud
-# Grundlage für alles
 resource "azurerm_virtual_network" "vnet" {
   name                = "interview-vnet"
   address_space       = ["10.0.0.0/16"]
@@ -37,7 +33,6 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 # Subnet (Stadteil / Viertel)
-# Unterteilung des VNets, hier kommen die Server rein
 resource "azurerm_subnet" "subnet" {
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -46,8 +41,6 @@ resource "azurerm_subnet" "subnet" {
 }
 
 # Public IP (Adresse im Telefonbuch / Briefkasten)
-# Macht Zugang von zu Hause auf den Server möglich
-
 resource "azurerm_public_ip" "public_ip" {
   name                = "vm-public-ip"
   location            = azurerm_resource_group.rg.location
@@ -56,10 +49,7 @@ resource "azurerm_public_ip" "public_ip" {
   sku                 = "Standard"
 }
 
-# Network Interface (Netzwerkkarte)
-# verbindet VM und Netzwerk
-# Bildet die Haustür / Anschluss zur Straße
-
+# Network Interface (NIC)
 resource "azurerm_network_interface" "nic" {
   name                = "vm-nic"
   location            = azurerm_resource_group.rg.location
@@ -73,10 +63,7 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Zugang zur Cloud (Deny All), (NSG).
-# Es wird explizit erlaubt, was rein darf. Sozusagen Ausnahmen.
-# Sicherheitsdienst / Türsteher für das Haus
-
+# Security (NSG)
 resource "azurerm_network_security_group" "nsg" {
   name                = "vm-nsg"
   location            = azurerm_resource_group.rg.location
@@ -97,17 +84,14 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-# Firewallregeln werden an die Netzwerkkarte "befestigt"
-# Implicit dependency
-
+# Verknüofung NSG <-> NIC
 resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
 
-# Virtuelle Linux Maschine
-# Haus, hier wird gewohnt und gearbeitet
+# Virtuelle Linux Maschine (Haus)
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "interview-vm"
   resource_group_name = azurerm_resource_group.rg.name
@@ -124,7 +108,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     public_key = file(pathexpand(var.ssh_public_key_path)) 
   }
 
-# Festplatte, hier SSD
+# Festplatte
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
