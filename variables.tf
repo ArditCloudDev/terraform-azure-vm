@@ -11,13 +11,13 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure Region"
   type        = string
-  default     = "germanywestcentral" # Frankfurt. Wichtig für Datenschutz und Geschwindigkeit
+  default     = "germanywestcentral" 
 }
 
 variable "vm_size" {
   description = "Größe der VM"
   type        = string
-  default     = "Standard_B2ps_v2" # B1s ist kleine, kostengünstige Größe für Tests 
+  default     = "Standard_B2ps_v2"  
 }
 
 variable "admin_username" {

@@ -1,5 +1,3 @@
-# Was soll Terraform am Ende ausgeben?
-# so ist keine Suche im Azure Portal nötig
 # IP Adresse wird im Statefile gespeichert und von dort ausgegeben
 
 output "public_ip_address" {
