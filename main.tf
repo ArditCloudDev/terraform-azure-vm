@@ -14,7 +14,7 @@ terraform {
 # 2. Subscription_id, wer zahlt die "VM" in diesem Fall
 provider "azurerm" {
   features {}
-# nachgebessert, Subscription_id gelöscht. Terraform nutzt die aktive CLI-Session (az login).
+  # nachgebessert, Subscription_id gelöscht. Terraform nutzt die aktive CLI-Session (az login).
 }
 
 # 3. Resource Group (Container)
@@ -41,6 +41,7 @@ resource "azurerm_subnet" "subnet" {
 }
 
 # Public IP (Adresse im Telefonbuch / Briefkasten)
+# In der Realität lieber -> Azure Bastion
 resource "azurerm_public_ip" "public_ip" {
   name                = "vm-public-ip"
   location            = azurerm_resource_group.rg.location
@@ -70,21 +71,21 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.rg.name
 
   security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound" # Eingehender Verkehr
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22" # Standard SSH Port
-    source_address_prefix      = "*" 
+    name                   = "SSH"
+    priority               = 1001
+    direction              = "Inbound"
+    access                 = "Allow"
+    protocol               = "Tcp"
+    source_port_range      = "*"
+    destination_port_range = "22" # Standard SSH Port
+    source_address_prefix  = "*"
     # "*" = "Allow Any". Für die Demo okay, damit ich sofort Zugriff habe.
     # In Realität würde hier NUR die eigene Firmen-IP eingetragen werden. 
     destination_address_prefix = "*"
   }
 }
 
-# Verknüofung NSG <-> NIC
+# Verknüpfung NSG <-> NIC
 resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
@@ -102,24 +103,24 @@ resource "azurerm_linux_virtual_machine" "vm" {
     azurerm_network_interface.nic.id,
   ]
 
-# SSH-Key Authentifizierung (Sicherer als Passwort)
+  # SSH-Key Authentifizierung (Sicherer als Passwort)
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file(pathexpand(var.ssh_public_key_path)) 
+    public_key = file(pathexpand(var.ssh_public_key_path))
   }
 
-# Festplatte
+  # Festplatte
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
   }
 
-# Betriebssystem (Image)
+  # Betriebssystem (Image)
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
     # "-arm64" angehangen, damit es auf B2ps_v2 läuft
-    sku       = "22_04-lts-arm64"
-    version   = "latest"
+    sku     = "22_04-lts-arm64"
+    version = "latest"
   }
 }

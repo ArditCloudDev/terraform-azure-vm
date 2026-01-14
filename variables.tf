@@ -31,5 +31,5 @@ variable "ssh_public_key_path" {
   description = "Pfad zum öffentlichen SSH-Key auf dem lokalen Rechner"
   type        = string
   # ~ ist Zeichen für Home-Verzeichnis also C:/User...
-  default     = "~/.ssh/id_rsa.pub" 
+  default = "~/.ssh/id_rsa.pub"
 }
